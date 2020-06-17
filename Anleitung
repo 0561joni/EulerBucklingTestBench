@@ -1,0 +1,21 @@
+Willkommen zur 1. Version der Teststand Software
+
+Schritt 1:
+Der Code für den Arduino ist aufgespielt und übergibt die Befehle g,s,r für go, stop, reverse.
+
+Schritt 2:
+Im Python Code den richtigen seriellen Port eingeben (Standardmäßig COM3)
+
+Schritt 3:
+Code ausführen
+
+Schritt 4:
+'go' eingeben und dann Enter, um zu starten.
+Der Motor wird nun anfangen zu drehen.
+
+Schritt 5:
+Bei erreichen des gewünschten Knickzustandes
+'stop' eingeben. Der Motor stoppt
+
+Schritt 6:
+'quit' eingeben. Dabei werden die Daten in einer Excel-Datei gespeichert.
