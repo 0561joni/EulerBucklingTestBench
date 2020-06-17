@@ -49,11 +49,11 @@ void readCell() {
       }
       lastSteps = steps;
       if (motorStart) {
-        Serial.print("steps:");
+        Serial.print("steps: ");
         Serial.print(rot * 4096 + steps);
-        Serial.print(" dist:");
+        Serial.print(" dist: ");
         Serial.print(LEAD * (rot + (float)steps / 4096));
-        Serial.print(" load:");
+        Serial.print(" load: ");
         Serial.println(i);
         if (i > MAX_FORCE) {
           Serial.println("stopped because of overload");
@@ -66,7 +66,7 @@ void readCell() {
   }
 }
 
-void readSerial() {
+void readSerialMarcus() {
   // receive command from serial terminal, send 'tare' to initiate tare operation:
   static String buf = "";
   if (Serial.available() > 0) {
@@ -88,6 +88,30 @@ void readSerial() {
       buf = "";
     }
   }
+
+  // check if last tare operation is complete:
+  if (LoadCell.getTareStatus() == true) {
+    Serial.println("Tare complete");
+  }
+}
+
+void readSerial() {
+  // receive command from serial terminal, send 'tare' to initiate tare operation:
+  static char userInput;
+  if (Serial.available() > 0) {
+    userInput = Serial.read();
+    if (userInput == 'g') {
+      motorStart = true;
+    }  
+    else if (userInput == 's') {
+      motorStart = false;
+      stepper.off();
+    }
+    else if (userInput == 'r') {
+      motorDir = !motorDir;
+    }
+  }
+  
 
   // check if last tare operation is complete:
   if (LoadCell.getTareStatus() == true) {
