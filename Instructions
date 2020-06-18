@@ -1,0 +1,20 @@
+Welcome to v1.0 of the Euler Buckling Test Bench Software
+
+Step 1:
+Load the arduino code on the Arduino i.e. with the Arduino IDE.
+
+Step 2:
+Open the Python code and configure the serial port (standard is set to COM3).
+
+Step 3:
+Run the python code.
+
+Step 4:
+Write 'go' in the console and enter to start the motor.
+The sensor will now register the load and the distance.
+
+Step 5:
+When the desired distance is achieved, input 'stop' to stop the motor.
+
+Step 6:
+press 'quit' to safe the data in an excel file and quit the program.
