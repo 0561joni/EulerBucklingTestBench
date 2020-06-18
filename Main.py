@@ -1,0 +1,93 @@
+from __future__ import absolute_import, division, print_function
+import cmd
+import os
+import xlsxwriter
+import signal
+import threading
+from serial import Serial
+
+run_app_loop = True
+
+arduino = Serial("COM3", 57600, timeout=1)
+
+# Create an new Excel file and add a worksheet.
+workbook = xlsxwriter.Workbook('KnickstabDaten.xlsx')
+worksheet = workbook.add_worksheet()
+# Add a bold format to use to highlight cells.
+bold = workbook.add_format({'bold': True})
+# Add a number format for cells.
+number_format = workbook.add_format({'num_format': '#.##0,00'})
+# Setup columns.
+worksheet.write('A1', 'Steps', bold)
+worksheet.write('B1', 'Distance', bold)
+worksheet.write('C1', 'Load', bold)
+
+
+def mainloop():
+    global run_app_loop
+    global iterations
+    iterations = 1
+
+    #iterations = 0
+    while run_app_loop:
+        #time.sleep(1)  # Simulate doing something.
+
+        # Write some numbers, with row/column notation.
+        arduinoData = arduino.readline().decode('ascii')
+        dataList = arduinoData.split()
+        #print(dataList)
+
+        try:
+            #worksheet.write_number(iterations, 0, dataList[1])
+            worksheet.write_number(iterations, 0, float(dataList[1]))
+            worksheet.write_number(iterations, 1, float(dataList[3]))
+            worksheet.write_number(iterations, 2, float(dataList[5]))
+            iterations += 1
+        except:
+            1
+            #print(dataList)
+
+    print('\nQuit app thread.')
+    os.kill(os.getpid(), signal.SIGINT)  # Tell the other thread to quit with SIGINT
+
+
+class TestCmd(cmd.Cmd):
+
+    def do_quit(self, line):
+        return self.do_EOF("")
+
+    def do_go(self, line):
+        arduino.write(b'go\n')
+        print('motor started')
+
+    def do_stop(self, line):
+        arduino.write(b's')
+        print('motor stopped')
+
+    def do_reverse(self, line):
+        arduino.write(b'r')
+        print('reversed motor')
+
+    def do_EOF(self, line):
+        global run_app_loop
+        print('Telling other thread to quit.')
+        workbook.close()
+        run_app_loop = False
+
+        return True
+
+t = threading.Thread(target=mainloop)
+t.start()
+
+try:
+    print('Will quit automatically in 12 seconds, interrupting cmd.Cmd')
+    shell = TestCmd()
+    shell.do_help("")
+    shell.cmdloop()
+    run_app_loop = False
+    t.join()
+except KeyboardInterrupt:
+    if run_app_loop:
+        raise
+    else:
+        print('\nBye')

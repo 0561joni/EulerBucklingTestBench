@@ -5,11 +5,16 @@
 #define MAX_FORCE 2000
 #define MOTOR_SPEED 6 //must be between 6 and 22
 #define LEAD 8
+#define DEVICENAME "EulerBucklingTestBench"
+#define PROTOCOL_VERSION 1
 
 HX711_ADC LoadCell(2, 3);
 CheapStepper stepper (8, 9, 10, 11);
 const int calVal_eepromAdress = 0;
 long t;
+int globalSteps = 0;
+int rot = 0;
+int lastSteps = 0;
 bool motorStart = false;
 bool motorDir = true;
 
@@ -26,43 +31,41 @@ void lcSetup() {
   }
   else {
     LoadCell.setCalFactor(calibrationValue); // set calibration value (float)
-    Serial.println("Startup is complete");
+    Serial.println("ready");
   }
 }
 
 void readCell() {
-  static boolean newDataReady = 0;
-  static int rot = 0;
-  static int lastSteps = 0;
+  bool newDataReady = false;
   // check for new data/start next conversion:
   if (LoadCell.update()) newDataReady = true;
   // get smoothed value from the dataset:
   if (newDataReady) {
-    if (millis() > t + 100) {
-      float i = LoadCell.getData();
-      int steps = stepper.getStep();
-      if (motorDir && steps < lastSteps) {
-        rot += 1;
-      }
-      else if (!motorDir && steps > lastSteps) {
-        rot -= 1;
-      }
-      lastSteps = steps;
-      if (motorStart) {
-        Serial.print("steps:");
-        Serial.print(rot * 4096 + steps);
-        Serial.print(" dist:");
-        Serial.print(LEAD * (rot + (float)steps / 4096));
-        Serial.print(" load:");
-        Serial.println(i);
-        if (i > MAX_FORCE) {
-          Serial.println("stopped because of overload");
-          motorStart = false;
-        }
-      }
-      newDataReady = 0;
-      t = millis();
+    float i = LoadCell.getData();
+    int steps = stepper.getStep();
+    if (motorDir && steps < lastSteps) {
+      rot += 1;
     }
+    else if (!motorDir && steps > lastSteps) {
+      rot -= 1;
+    }
+    lastSteps = steps;
+    globalSteps = rot * 4096 + steps;
+    if (motorStart) {
+      Serial.print("steps:");
+      Serial.print(globalSteps);
+      Serial.print(" dist:");
+      Serial.print(LEAD * (rot + (float)steps / 4096));
+      Serial.print(" load:");
+      Serial.println(i);
+      if (i > MAX_FORCE) {
+        Serial.println("stopped because of overload");
+        motorStart = false;
+      }
+    }
+    newDataReady = 0;
+    t = millis();
+
   }
 }
 
@@ -82,8 +85,16 @@ void readSerial() {
         motorStart = false;
         stepper.off();
       }
-      else if (buf == "reverse") {
+      else if (buf == "switchDir" && motorStart == false) {
         motorDir = !motorDir;
+      }
+      else if (buf == "reverse") {
+        stepper.move(!motorDir,globalSteps);
+        motorStart = false;
+        globalSteps = 0;
+        lastSteps = 0;
+        rot = 0; 
+        stepper.off();
       }
       buf = "";
     }
@@ -96,8 +107,10 @@ void readSerial() {
 }
 
 void setup() {
-  Serial.begin(57600); delay(10);
-  Serial.println();
+  Serial.begin(115200); delay(10);
+  Serial.println(DEVICENAME);
+  Serial.print("protocol version: ");
+  Serial.println(PROTOCOL_VERSION);
   lcSetup();
   stepper.setRpm(MOTOR_SPEED);
 
