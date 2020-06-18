@@ -19,7 +19,7 @@ layout = [[sg.Text('Euler Buckling Test Bench v0.1', justification='center', siz
               'NOT CONNECTED', size=(30, 1), key='CONNECT_STATUS')],
           [sg.Button('Start', key='START'), sg.Button('Stop', key='STOP'), sg.Button('Return', key='RETURN'), sg.Button('Save', key='SAVE'), sg.Button('Clear', key='CLEAR'), sg.Button('Tare', key='TARE'), sg.Button('SwitchDir', key='SWITCHDIR')]]
 window = sg.Window('EulerBucklingTestBench', layout,
-                   finalize=True, font="Helvetica 12")
+                   finalize=True, font="Helvetica 12", icon="icon.ico")
 
 
 def readline(connection):
