@@ -120,6 +120,6 @@ void loop() {
   readCell();
   readSerial();
   if (motorStart) {
-    stepper.moveDegrees(motorDir, 1);
+    stepper.move(motorDir, 1);
   }
 }
