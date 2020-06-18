@@ -77,7 +77,14 @@ void readSerial() {
     buf += c;
     if (c == '\n') {
       buf.remove(buf.length() - 1);
-      if (buf == "tare") LoadCell.tareNoDelay();
+      if (buf == "tare") {
+        LoadCell.tareNoDelay();
+        motorStart = false;
+        globalSteps = 0;
+        lastSteps = 0;
+        rot = 0; 
+        stepper.off();
+      }
       else if (buf == "go") {
         motorStart = true;
       }
@@ -89,11 +96,11 @@ void readSerial() {
         motorDir = !motorDir;
       }
       else if (buf == "reverse") {
-        stepper.move(!motorDir,globalSteps);
+        stepper.move(!motorDir, globalSteps);
         motorStart = false;
         globalSteps = 0;
         lastSteps = 0;
-        rot = 0; 
+        rot = 0;
         stepper.off();
       }
       buf = "";

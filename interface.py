@@ -17,7 +17,7 @@ layout = [[sg.Text('Euler Buckling Test Bench v0.1', justification='center', siz
           [sg.Canvas(key="-CANVAS-")],
           [sg.Button('Connect', key='CONNECT'), sg.Text(
               'NOT CONNECTED', size=(30, 1), key='CONNECT_STATUS')],
-          [sg.Button('Start', key='START'), sg.Button('Stop', key='STOP'), sg.Button('Return', key='RETURN'), sg.Button('Save', key='SAVE'), sg.Button('Clear', key='CLEAR'), sg.Button('SwitchDir', key='SWITCHDIR')]]
+          [sg.Button('Start', key='START'), sg.Button('Stop', key='STOP'), sg.Button('Return', key='RETURN'), sg.Button('Save', key='SAVE'), sg.Button('Clear', key='CLEAR'), sg.Button('Tare', key='TARE'), sg.Button('SwitchDir', key='SWITCHDIR')]]
 window = sg.Window('EulerBucklingTestBench', layout,
                    finalize=True, font="Helvetica 12")
 
@@ -133,6 +133,8 @@ def gui_main_loop():
                                        None or running or len(forces) == 0 else False)
         window.Element('SWITCHDIR').Update(
             disabled=True if connection == None or running else False)
+        window.Element('TARE').Update(
+            disabled=True if connection == None or running else False)
 
         event, values = window.read(timeout=20)
         #print(event, values)
@@ -160,6 +162,8 @@ def gui_main_loop():
         elif event == "CLEAR":
             forces.clear()
             distances.clear()
+        elif event == "TARE":
+            connection.write(b"tare\n")
         elif event == "SAVE":
             fname = sg.popup_get_text('', 'Please input a filename')
             file, worksheet = setup_result_file(fname)
