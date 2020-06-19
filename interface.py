@@ -17,7 +17,7 @@ layout = [[sg.Text('Euler Buckling Test Bench v0.1', justification='center', siz
           [sg.Canvas(key="-CANVAS-")],
           [sg.Button('Connect', key='CONNECT'), sg.Text(
               'NOT CONNECTED', size=(30, 1), key='CONNECT_STATUS')],
-          [sg.Button('Start', key='START'), sg.Button('Stop', key='STOP'), sg.Button('Return', key='RETURN'), sg.Button('Save', key='SAVE'), sg.Button('Clear', key='CLEAR'), sg.Button('Tare', key='TARE'), sg.Button('SwitchDir', key='SWITCHDIR')]]
+          [sg.Button('Start', key='START', tooltip='Start the motor and store data in cash'), sg.Button('Stop', key='STOP', tooltip='Stop motor'), sg.Button('Return', key='RETURN', tooltip='Return the testbench to the startposition'), sg.Button('Save', key='SAVE', tooltip='Save cash data to file in directory of the script'), sg.Button('Clear', key='CLEAR', tooltip='Clear plot'), sg.Button('Tare', key='TARE', tooltip='Recalibrate the sensor and set the travel distance to 0'), sg.Button('SwitchDir', key='SWITCHDIR', tooltip='Reverse motor direction')]]
 window = sg.Window('EulerBucklingTestBench', layout,
                    finalize=True, font="Helvetica 12", icon="icon.ico")
 
