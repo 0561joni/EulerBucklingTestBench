@@ -4,7 +4,7 @@ import serial.tools.list_ports as list_ports
 import time
 import logging
 import PySimpleGUI as sg
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 BAUDRATE = 115200
@@ -23,10 +23,12 @@ window = sg.Window('EulerBucklingTestBench', layout,
 
 
 def readline(connection):
+    '''wraper Function to automatically remove linebreaks '''
     return connection.readline().replace(b'\n', b'').replace(b'\r', b'')
 
 
 def draw_figure(canvas, figure, loc=(0, 0)):
+    '''draw the figuere onto the canvas'''
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
     figure_canvas_agg.draw()
     figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
@@ -34,6 +36,7 @@ def draw_figure(canvas, figure, loc=(0, 0)):
 
 
 def connect_serial(window):
+    '''searches automatically for a connected device. returns the connection (object or None) and a status string'''
     logging.info(f"searching for device with baudrate {BAUDRATE} ...")
     ports = list(list_ports.comports())
     for port in ports:
@@ -64,11 +67,12 @@ def connect_serial(window):
                         if line > 10:
                             return(None, "DEVICE NOT READY")
 
-    logging.error("could not find device. exiting programm.")
+    logging.error("could not find device.")
     return (None, "NO DEVICE FOUND")
 
 
 def setup_result_file(name):
+    '''create and setup the report file '''
     # Create an new Excel file and add a worksheet.
     workbook = xlsxwriter.Workbook(f"result_{name}.xlsx")
     worksheet = workbook.add_worksheet()
@@ -83,18 +87,22 @@ def setup_result_file(name):
 
 
 def read_data(connection):
+    '''read data from the connected device. returns parsed distance and force'''
     line = readline(connection)
     print(line)
     token = line.split(b" ")
-    print(token)
     if len(token) == 3:
-        dist = float((token[1].split(b":")[1]))
-        force = float((token[2].split(b":")[1]))
-        return(dist, force)
+        try:
+            dist = float((token[1].split(b":")[1]))
+            force = float((token[2].split(b":")[1]))
+            return(dist, force)
+        except Exception:
+            logging.warning("could not parse serial communication")
     return None
 
 
 def update_plot(ax, fig_agg, forces, distances):
+    '''update the figure'''
     ax.cla()
     ax.grid()
     # ax.set_xlim(0,350)
@@ -104,18 +112,23 @@ def update_plot(ax, fig_agg, forces, distances):
 
 
 def gui_main_loop():
+    '''handles program logic and gui updates'''
+
+    #state variables
     distances = []
     forces = []
     connection = None
     running = False
     has_moved = False
 
+    #figure variables and setup
     canvas = window['-CANVAS-'].TKCanvas
     fig = Figure(figsize=(4.5, 3))
     ax = fig.add_subplot()
     fig_agg = draw_figure(canvas, fig)
     fig.tight_layout()
 
+    #main loop
     while True:
         update_plot(ax, fig_agg, distances, forces)
 
