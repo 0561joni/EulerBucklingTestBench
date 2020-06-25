@@ -1,0 +1,55 @@
+%% Testground
+clc
+close all
+
+
+[travelDistance, meanValue, data, numberOfDatasets]=euler(4);
+figure
+hold on
+plot(travelDistance,meanValue)
+plot(travelDistance,data,':')
+title(['Eulerbuckling 4 -- with ' num2str(numberOfDatasets) ' datasets'])
+xlabel('displacement [mm]')
+ylabel('load [g]')
+lgd = legend('avarage', 'single data sets', 'Location', 'southeast');
+hold off
+
+function [travelDistance, meanValue, data, numberOfDatasets] = euler(caseNumber)
+    excelSheet = struct2cell(dir(['result_Euler' num2str(caseNumber) '*.*']));
+    names = (excelSheet(1,:)');
+    numberOfDatasets = length(names);
+    
+    data = (readtable(char(names(1)),'Range','A:B','ReadVariableNames',false));
+    toDelete = data.Var2 < 10;
+    data(toDelete,:) = []; %delete table content with less than 10g weight
+    data.Var1 = data.Var1 - data.Var1(1); %0 offset for travel length
+    travelDistance = data{:,1};
+    data = data{:,2};
+    
+    for i = 2:length(names)
+        readData = (readtable(char(names(i)),'Range','A:B','ReadVariableNames',false));
+        readData = readData{:,:};
+        toDelete = readData(:,2) < 10;
+        readData(toDelete,:) = [];
+    
+        % put the dataset to same length
+        if length(data)<length(readData)
+            readData = readData(1:length(data),:);
+        elseif length(data)>length(readData)
+            data = data(1:length(readData),:);
+            travelDistance = travelDistance(1:length(readData),:);
+        end
+    
+        data = [data readData(:,2)]; %concatenate read data to the dataset
+    end
+    
+    %data = data.*0.00981; % convert to force in N
+    meanValue = mean(data,2); %mean value
+    
+end
+
+function criticalLoad
+    
+    % Material Properties
+    E=100/pi()^2;
+end
