@@ -20,11 +20,12 @@ function [travelDistance, meanValue, data, numberOfDatasets] = euler(caseNumber)
     numberOfDatasets = length(names);
     
     data = (readtable(char(names(1)),'Range','A:B','ReadVariableNames',false));
-    toDelete = data.Var2 < 10;
+    data = data{:,:};
+    toDelete = data(:,2) < 10;
     data(toDelete,:) = []; %delete table content with less than 10g weight
-    data.Var1 = data.Var1 - data.Var1(1); %0 offset for travel length
-    travelDistance = data{:,1};
-    data = data{:,2};
+    travelDistance = data(:,1);
+    travelDistance = travelDistance - travelDistance(1);
+    data = data(:,2);
     
     for i = 2:length(names)
         readData = (readtable(char(names(i)),'Range','A:B','ReadVariableNames',false));
